@@ -2,6 +2,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (tab.url && tab.url.includes("indeed.com/jobs?")) {
         const queryParameters = tab.url.split("?")[1];
         const params = new URLSearchParams(queryParameters);
+        console.log(urlParameters);
 
         chrome.tabs.sendMessage(tabId,{
             type: "NEW",
