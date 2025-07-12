@@ -9,7 +9,7 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://www.indeed.com/"],
+            "matches": ["*://*.indeed.com/*"],
             "js": ["contentScript.js"]
         }
     ],
