@@ -1,24 +1,71 @@
-async function checkJobPosting(jobText) {
-  try {
-    const response = await fetch('http://localhost:5001/predict', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ job_description: jobText })
-    });
+(async () => {
+  console.log("Checking content script");
 
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+  const FLAG_CLASS = 'fake-job-flag';
 
-    const result = await response.json();
-
-    console.log('Prediction:', result.prediction);
-    console.log('Confidence:', result.confidence);
-
-    // Display the result in your popup or page
-    document.getElementById('result').innerText = 
-      `Prediction: ${result.prediction} (Confidence: ${result.confidence})`;
-  } catch (error) {
-    console.error('Error:', error);
+  function isAlreadyFlagged(el) {
+    return el.querySelector(`.${FLAG_CLASS}`) !== null;
   }
-}
+
+  async function scanJobPostings() {
+    const jobCards = document.querySelectorAll('[data-testid="jobsearch-SerpJobCard"], .job_seen_beacon');
+
+    for (const card of jobCards) {
+      if (isAlreadyFlagged(card)) continue;
+
+      const jobText = card.innerText.trim();
+      if (!jobText) continue;
+
+      const result = await checkJobPosting(jobText);
+      if (!result) continue;
+
+      if (result.prediction.toLowerCase().includes('fake')) {
+        addFlag(card, result);
+      }
+      console.log('Prediction result:', result);
+    }
+  }
+
+  async function checkJobPosting(jobText) {
+    try {
+      console.log("Sending job description to model:", jobText);
+      const response = await fetch('http://localhost:5001/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job_description: jobText })
+      });
+
+      if (!response.ok) throw new Error('API response not ok');
+      const result = await response.json();
+      return result;
+    } catch (err) {
+      console.error("Error fetching prediction:", err);
+      return null;
+    }
+  }
+
+  function addFlag(card, result) {
+    const flag = document.createElement('div');
+    flag.className = FLAG_CLASS;
+    flag.style.cssText = `
+      background: red;
+      color: white;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 5px;
+    `;
+    flag.innerText = `⚠️ FAKE JOB (Conf: ${result.confidence})`;
+
+    const insertAfter = card.querySelector('.jobTitle') || card.querySelector('h2');
+    if (insertAfter) {
+      insertAfter.parentElement.appendChild(flag);
+    } else {
+      card.appendChild(flag);
+    }
+  }
+
+  setInterval(scanJobPostings, 4000);
+})();

@@ -9,7 +9,7 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://www.indeed.com/"],
+            "matches": ["*://*.indeed.com/*"],
             "js": ["contentScript.js"]
         }
     ],
@@ -21,20 +21,18 @@
                 "assets/delete.png",
                 "assets/save.png"
             ],
-            "matches": ["https://www.indeed.com/"]
+            "matches": ["*://*.indeed.com/*"]
         }
    
     ],
     "action": {
-        "default_icon":{
-            "16" : "assets/ext-icon.png",
-            "24" : "assets/ext-icon.png",
-            "32": "assets/ext-icon.png"
-        },
+        //"default_icon": {
+    //    "16": "assets/ext-icon.png",
+    //    "24": "assets/ext-icon.png",
+    //    "32": "assets/ext-icon.png"
+    //},
 
-
-        "default_title" : "Scram!",
-        "default_popup": "popup.html"
+        "default_title" : "Scram!"
     },
     "manifest_version": 3
 }
