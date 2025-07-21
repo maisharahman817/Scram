@@ -3,7 +3,7 @@ from flask_cors import CORS
 from transformers import pipeline
 
 # Load model once at startup
-model_id = "k-habib/autotrain-scram3"
+model_id = "k-habib/scram-model"
 classifier = pipeline("text-classification", model=model_id)
 
 app = Flask(__name__)
@@ -25,3 +25,5 @@ def predict():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001) 
+
+    

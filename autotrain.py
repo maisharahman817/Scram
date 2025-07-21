@@ -1,6 +1,6 @@
 from transformers import pipeline
 
-model_id = "k-habib/autotrain-scram3"
+model_id = "k-habib/scram-model"
 classifier = pipeline("text-classification", model=model_id)
 
 texts = [
