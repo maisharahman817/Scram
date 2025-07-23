@@ -2,6 +2,8 @@
   console.log("Checking content script");
 
   const FLAG_CLASS = 'fake-job-flag';
+  let intervalId; // Store the interval ID so we can clear it later.
+
 
   function isAlreadyFlagged(el) {
     return el.querySelector(`.${FLAG_CLASS}`) !== null;
@@ -9,6 +11,12 @@
 
   async function scanJobPostings() {
     const jobCards = document.querySelectorAll('[data-testid="jobsearch-SerpJobCard"], .job_seen_beacon');
+
+    if (jobCards.length === 0) {
+      console.log("No job cards found, stopping scan.");
+      clearInterval(intervalId); // This stops the interval to save memory.
+      return;
+    }
 
     for (const card of jobCards) {
       if (isAlreadyFlagged(card)) continue;
@@ -65,7 +73,11 @@
     } else {
       card.appendChild(flag);
     }
+  
+   setTimeout(() => {
+      flag.remove(); // This cleans up the flag after 10 seconds.
+    }, 10000); // 10 seconds delay for flag removal.
   }
-
-  setInterval(scanJobPostings, 4000);
+  
+    intervalId = setInterval(scanJobPostings, 4000);
 })();
