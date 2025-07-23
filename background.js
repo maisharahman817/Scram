@@ -20,7 +20,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "FETCH_PREDICTION") {
-    fetch("http://localhost:5001/predict", {
+    fetch("https://scram-j85q.onrender.com/predict", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(message.payload)
