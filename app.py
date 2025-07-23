@@ -26,6 +26,6 @@ def predict():
     })
 
 if __name__ == '__main__':
-    # Render will automatically set the PORT environment variable
-    port = int(os.environ.get('PORT', 5000))  # Default to 5000 if not set
+    # Flask's default `run` should not be used for production
+    port = int(os.environ.get('PORT', 5001))  # Default to 5001 if PORT is not set
     app.run(host='0.0.0.0', port=port)
