@@ -1,10 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-
-from flask_cors import CORS
 from transformers import pipeline
 
-# Load model once at startup
+# Load model once at startup (this is the key change)
 model_id = "k-habib/scram-model"
 classifier = pipeline("text-classification", model=model_id)
 
@@ -14,17 +12,14 @@ CORS(app, resources={r"/predict": {"origins": "*"}}, supports_credentials=True)
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    from transformers import pipeline  # import inside
-    model_id = "k-habib/scram-model"
-    classifier = pipeline("text-classification", model=model_id)
-
     data = request.get_json()
     text = data.get('job_description', '')
 
     if not text:
         return jsonify({'error': 'No job description provided'}), 400
 
-    result = classifier(text[:512])[0]
+    # Perform prediction using pre-loaded classifier
+    result = classifier(text[:512])[0]  # Truncate the input to 512 tokens to avoid memory issues
     return jsonify({
         'prediction': result['label'],
         'confidence': round(result['score'], 3)
@@ -33,5 +28,3 @@ def predict():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001) 
-
-    
