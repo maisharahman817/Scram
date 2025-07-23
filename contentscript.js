@@ -29,7 +29,7 @@
   async function checkJobPosting(jobText) {
     try {
       console.log("Sending job description to model:", jobText);
-      const response = await fetch('http://localhost:5001/predict', {
+      const response = await fetch('https://scram-j85q.onrender.com/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ job_description: jobText })
