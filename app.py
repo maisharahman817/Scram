@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+
+from flask_cors import CORS
 from transformers import pipeline
 
 # Load model once at startup
@@ -7,7 +9,7 @@ model_id = "k-habib/scram-model"
 classifier = pipeline("text-classification", model=model_id)
 
 app = Flask(__name__)
-CORS(app, resources={r"/predict": {"origins": "*"}})
+CORS(app, resources={r"/predict": {"origins": "*"}}, supports_credentials=True)
   # Allow Chrome extension to connect
 
 @app.route('/predict', methods=['POST'])
