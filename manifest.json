@@ -2,7 +2,10 @@
     "name" : "Scram!",
     "version" : "0.1.0",
     "description" : "Flags fake listings on indeed",
-    "permissions" : ["storage", "tabs"],
+    "permissions": [
+        "storage",
+        "tabs",
+        "https://scram-j85q.onrender.com/"],
     "host_permissions": ["https://www.indeed.com/",  "http://localhost:5001/*"],
     "background" : {
         "service_worker": "background.js"

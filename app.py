@@ -7,7 +7,8 @@ model_id = "k-habib/scram-model"
 classifier = pipeline("text-classification", model=model_id)
 
 app = Flask(__name__)
-CORS(app)  # Allow Chrome extension to connect
+CORS(app, resources={r"/predict": {"origins": "https://www.indeed.com"}})
+  # Allow Chrome extension to connect
 
 @app.route('/predict', methods=['POST'])
 def predict():
