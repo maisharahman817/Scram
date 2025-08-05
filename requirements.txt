@@ -1,5 +1,4 @@
 flask
-flask_cors
+flask-cors
 transformers
 torch  
-gunicorn
