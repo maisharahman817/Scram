@@ -12,22 +12,23 @@ CORS(app, resources={r"/predict": {"origins": "*"}}, supports_credentials=True)
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    data = request.get_json()
-    print("🔥 Received data:", data)  # <--- Add this line for debugging
+    data = request.json
+    job_description = data.get('job_description', '').strip()
 
-    text = data.get('job_description', '')
+    if not job_description:
+        return jsonify({'error': 'Empty job description'}), 400
 
-    if not text:
-        print("⚠️ No job description provided.")  # optional extra log
-        return jsonify({'error': 'No job description provided'}), 400
+    # Truncate input to 512 chars to avoid tokenizer/model errors
+    truncated_text = job_description[:512]
 
-    result = classifier(text[:512])[0]
-    print("✅ Prediction result:", result)  # <--- Add this too for output
-
-    return jsonify({
-        'prediction': result['label'],
-        'confidence': round(result['score'], 3)
-    })
+    try:
+        result = classifier(truncated_text)
+        prediction = result[0]['label']
+        confidence = result[0]['score']
+        return jsonify({'prediction': prediction, 'confidence': round(confidence, 3)})
+    except Exception as e:
+        print("Model inference error:", e)
+        return jsonify({'error': 'Model inference failed'}), 500
 
 if __name__ == '__main__':
     # Flask's default `run` should not be used for production

@@ -1,7 +1,7 @@
 from transformers import pipeline
 
 model_id = "k-habib/scram-model"
-classifier = pipeline("text-classification", model=model_id)
+classifier = pipeline("text-classification", model=model_id, tokenizer="k-habib/scram-model")
 
 texts = [
     "No experience needed. Pay money upfront to secure your position.",
