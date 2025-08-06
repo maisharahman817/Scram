@@ -13,13 +13,17 @@ CORS(app, resources={r"/predict": {"origins": "*"}}, supports_credentials=True)
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.get_json()
+    print("🔥 Received data:", data)  # <--- Add this line for debugging
+
     text = data.get('job_description', '')
 
     if not text:
+        print("⚠️ No job description provided.")  # optional extra log
         return jsonify({'error': 'No job description provided'}), 400
 
-    # Perform prediction using pre-loaded classifier
     result = classifier(text[:512])[0]
+    print("✅ Prediction result:", result)  # <--- Add this too for output
+
     return jsonify({
         'prediction': result['label'],
         'confidence': round(result['score'], 3)
