@@ -1,11 +1,26 @@
 {
     "name" : "Scram!",
     "version" : "0.1.0",
-    "description" : "Flags fake listings on indeed",
+    "description" : "Have you ever applied to a job on Indeed and not heard back? Scram! is here to help you spot fake job postings and save you time.",
+    "icons": {
+    "16": "icons/icon_16x16.png",
+    "48": "icons/icon_48x48.png",
+    "128": "icons/icon_128x128.png"
+    },
     "permissions": [
         "storage",
         "tabs",
+        "activeTab",
+        "scripting",
         "https://scram-j85q.onrender.com/"],
+    "action": {
+  "default_icon": {
+    "16": "icons/icon_16x16.png",
+    "48": "icons/icon_48x48.png",
+    "128": "icons/icon_128x128.png"
+  },
+  "default_popup": "popup.html"
+    },
     "host_permissions": ["https://www.indeed.com/",  "http://localhost:5001/*"],
     "background" : {
         "service_worker": "background.js"
@@ -28,14 +43,5 @@
         }
    
     ],
-    "action": {
-        //"default_icon": {
-    //    "16": "assets/ext-icon.png",
-    //    "24": "assets/ext-icon.png",
-    //    "32": "assets/ext-icon.png"
-    //},
-
-        "default_title" : "Scram!"
-    },
     "manifest_version": 3
 }

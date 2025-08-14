@@ -34,3 +34,16 @@ if __name__ == '__main__':
     # Flask's default `run` should not be used for production
     port = int(os.environ.get('PORT', 5001))  # Default to 5001 if PORT is not set
     app.run(host='0.0.0.0', port=port)
+
+@app.route('/feedback', methods=['POST'])
+def feedback():
+    data = request.json
+    job_title = data.get('job_title', 'Unknown')
+    job_description = data.get('job_description', '')
+    feedback_type = data.get('feedback_type', 'unspecified')
+
+    # For now, just print the feedback to the logs
+    print(f"\n📩 Feedback received:\n- Type: {feedback_type}\n- Title: {job_title}\n- Description length: {len(job_description)} chars\n")
+
+    return jsonify({'status': 'Feedback received'}), 200
+
