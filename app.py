@@ -8,7 +8,7 @@ model_id = "k-habib/scram-model"
 classifier = pipeline("text-classification", model=model_id)
 
 app = Flask(__name__)
-CORS(app, resources={r"/predict": {"origins": "*"}}, supports_credentials=True)
+CORS(app)  # Allow CORS for all routes
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -18,7 +18,6 @@ def predict():
     if not job_description:
         return jsonify({'error': 'Empty job description'}), 400
 
-    # Truncate input to 512 chars to avoid tokenizer/model errors
     truncated_text = job_description[:512]
 
     try:
@@ -30,20 +29,17 @@ def predict():
         print("Model inference error:", e)
         return jsonify({'error': 'Model inference failed'}), 500
 
-if __name__ == '__main__':
-    # Flask's default `run` should not be used for production
-    port = int(os.environ.get('PORT', 5001))  # Default to 5001 if PORT is not set
-    app.run(host='0.0.0.0', port=port)
-
 @app.route('/feedback', methods=['POST'])
 def feedback():
-    data = request.json
-    job_title = data.get('job_title', 'Unknown')
-    job_description = data.get('job_description', '')
-    feedback_type = data.get('feedback_type', 'unspecified')
+    data = request.get_json()
+    job_title = data.get('job_title')
+    job_description = data.get('job_description')
+    feedback_type = data.get('feedback_type')
 
-    # For now, just print the feedback to the logs
-    print(f"\n📩 Feedback received:\n- Type: {feedback_type}\n- Title: {job_title}\n- Description length: {len(job_description)} chars\n")
+    print(f"Feedback received: {feedback_type} | {job_title}")
 
-    return jsonify({'status': 'Feedback received'}), 200
+    return jsonify({'status': 'success', 'message': 'Feedback received!'}), 200
 
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5001))
+    app.run(host='0.0.0.0', port=port, debug=True)
