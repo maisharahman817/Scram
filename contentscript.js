@@ -12,10 +12,12 @@ const FLAG_CLASS = 'fake-job-flag';
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "startScram") {
     console.log("Scram! scanning started");
-    if (!scanningEnabled) {
-      scanningEnabled = true;
-      startScanning();
-    }
+  if (scanningEnabled) {
+    stopScanning(); // clear everything including summary
+  }
+  scanningEnabled = true;
+  startScanning();
+
   } else if (message.action === "stopScram") {
     console.log("Scram! scanning stopped");
     scanningEnabled = false;
@@ -24,6 +26,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 function startScanning() {
+
   scamCount = 0;
   scamJobs = [];
   processedJobs.clear();
@@ -77,9 +80,6 @@ function stopScanning() {
     mutationObserver = null;
   }
 
-  hideScanningMessage();
-  clearSummaryMessage();
-
   processedJobs.clear();
   scamCount = 0;
   scamJobs = [];
@@ -91,6 +91,8 @@ async function processJobCard(card) {
   const jobText = card.innerText.trim();
   if (!jobText || processedJobs.has(jobText)) return;
   processedJobs.add(jobText);
+  addFeedbackIconOutside(card);
+
 
   try {
     showScanningMessage();
@@ -146,8 +148,6 @@ function addFlag(card, result) {
   scamJobs.push(card.querySelector('.jobTitle')?.innerText || 'Unknown Job');
 }
 
-// UI helper functions (create/show/hide scanning & summary messages):
-
 function createScanningMessage() {
   let msg = document.getElementById('scram-scanning-msg');
   if (!msg) {
@@ -178,7 +178,7 @@ function createScanningMessage() {
 
     const text = document.createElement('span');
     text.id = 'scram-msg-text';
-    text.innerText = 'Wait a moment while Scram! scans...';
+    text.innerText = 'Wait a moment while <i> Scram! <i> scans...';
 
     msg.appendChild(spinner);
     msg.appendChild(text);
@@ -238,7 +238,6 @@ function showSuccessMessage() {
   const text = document.getElementById('scram-msg-text');
   if (text) text.innerText = 'Scan complete!';
 
-  showScanSummary();
 }
 
 function hideScanningMessage() {
@@ -246,110 +245,110 @@ function hideScanningMessage() {
   if (msg) msg.style.display = 'none';
 }
 
-function showScanSummary() {
-  clearSummaryMessage();
+function addFeedbackIconOutside(card) {
+  console.log('Adding icon for card:', card.dataset.jk);
 
-  const msg = document.createElement('div');
-  msg.id = 'scram-summary-msg';
-  msg.style.position = 'fixed';
-  msg.style.top = '20px';
-  msg.style.right = '20px';
-  msg.style.backgroundColor = '#cd4343ff';
-  msg.style.color = 'white';
-  msg.style.padding = '15px 20px';
-  msg.style.borderRadius = '8px';
-  msg.style.fontSize = '14px';
-  msg.style.fontWeight = 'bold';
-  msg.style.zIndex = '999999';
-  msg.style.display = 'flex';
-  msg.style.flexDirection = 'column';
-  msg.style.gap = '10px';
-  msg.style.boxShadow = 'none';
+  const cardId = card.dataset.jk || `scram-id-${Math.random().toString(36).slice(2, 9)}`;
+  if (document.querySelector(`#scram-icon-${cardId}`)) return;  // Prevent duplicates
 
-  let summaryText = '';
-  if (scamCount === 0) {
-    summaryText = 'No scams found!';
-  } else if (scamCount === 1) {
-    summaryText = `1 scam posting found:`;
-  } else {
-    summaryText = `${scamCount} scam postings found:`;
-  }
+  const icon = document.createElement('img');
+  icon.src = chrome.runtime.getURL('assets/feedback.png');
+  icon.alt = 'Send feedback';
+  icon.id = `scram-icon-${cardId}`;
+  icon.className = 'scram-feedback-icon';
 
-  const text = document.createElement('span');
-  text.innerText = summaryText;
-  msg.appendChild(text);
-
-  scamJobs.forEach(job => {
-    const jobElem = document.createElement('div');
-    jobElem.style.display = 'flex';
-    jobElem.style.alignItems = 'center';
-    jobElem.style.gap = '8px';
-
-    const icon = document.createElement('span');
-    icon.innerText = '⚠️';
-    jobElem.appendChild(icon);
-
-    const jobText = document.createElement('span');
-    jobText.innerText = job;
-    jobElem.appendChild(jobText);
-
-    msg.appendChild(jobElem);
+  Object.assign(icon.style, {
+    position: 'fixed',
+    width: '65px',
+    height: '65px',
+    cursor: 'pointer',
+    zIndex: '10000',
   });
 
-  document.body.appendChild(msg);
+  function positionIcon() {
+    try {
+      const jobRect = card.getBoundingClientRect();
+      icon.style.top = `${jobRect.top + 10}px`;
+      icon.style.left = `${jobRect.left - 70}px`;
+    } catch (e) {
+      console.warn('Could not position feedback icon:', e);
+    }
+  }
 
-  // Auto hide after 10 seconds
-  setTimeout(() => {
-    clearSummaryMessage();
-  }, 10000);
-}
+  positionIcon();
+  window.addEventListener('scroll', positionIcon);
+  window.addEventListener('resize', positionIcon);
 
-function addFeedbackButton(card) {
-  if (card.querySelector('.scram-feedback')) return; // avoid duplicates
+  icon.addEventListener('click', () => {
+  const existingMenu = document.getElementById(`scram-menu-${cardId}`);
+  
+  if (existingMenu) {
+    existingMenu.remove(); // If menu exists, remove it and stop
+    return;
+  }
 
-  const feedbackBtn = document.createElement('button');
-  feedbackBtn.textContent = 'Report Feedback';
-  feedbackBtn.className = 'scram-feedback';
-  feedbackBtn.style.marginLeft = '10px';
-  feedbackBtn.style.fontSize = '12px';
-  feedbackBtn.style.cursor = 'pointer';
-  feedbackBtn.style.padding = '4px 6px';
-  feedbackBtn.style.border = 'none';
-  feedbackBtn.style.backgroundColor = '#f44336';
-  feedbackBtn.style.color = 'white';
-  feedbackBtn.style.borderRadius = '4px';
+  const jobTitle = card.querySelector('.jobTitle')?.innerText || 'Unknown Job';
+  const jobText = card.innerText || '';
 
-  feedbackBtn.addEventListener('click', () => {
-    const jobTitle = card.querySelector('.jobTitle')?.innerText || 'Unknown Job';
-    const jobText = card.innerText;
+  // Create menu container
+  const menu = document.createElement('div');
+  menu.id = `scram-menu-${cardId}`;
+  menu.style.position = 'absolute';
+  const rect = icon.getBoundingClientRect();
+  menu.style.top = `${rect.top + window.scrollY + 70}px`;
+  menu.style.left = `${rect.left}px`;
+  menu.style.backgroundColor = '#fff';
+  menu.style.border = '1px solid #ccc';
+  menu.style.borderRadius = '5px';
+  menu.style.padding = '5px';
+  menu.style.zIndex = '10001';
+  menu.style.display = 'flex';
+  menu.style.flexDirection = 'column';
+  menu.style.gap = '5px';
+  menu.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
 
-    sendFeedback(jobTitle, jobText);
+  // Fake button
+  const fakeBtn = document.createElement('button');
+  fakeBtn.innerText = 'This is a fake job';
+  fakeBtn.style.padding = '5px 10px';
+  fakeBtn.addEventListener('click', () => {
+    sendFeedback(jobTitle, jobText, 'fake');
+    menu.remove();
   });
 
-  // Insert after jobTitle or h2 element
-  const insertAfter = card.querySelector('.jobTitle') || card.querySelector('h2');
-  if (insertAfter) {
-    insertAfter.parentElement.appendChild(feedbackBtn);
-  } else {
-    card.appendChild(feedbackBtn);
-  }
-}
+  // Real button
+  const realBtn = document.createElement('button');
+  realBtn.innerText = 'This is a real job';
+  realBtn.style.padding = '5px 10px';
+  realBtn.addEventListener('click', () => {
+    sendFeedback(jobTitle, jobText, 'real');
+    menu.remove();
+  });
 
-const jobCards = document.querySelectorAll('[data-testid="jobsearch-SerpJobCard"], .job_seen_beacon');
-jobCards.forEach(card => {
-  observer.observe(card);
-  addFeedbackButton(card);  // Add this line to insert feedback button
+  menu.appendChild(fakeBtn);
+  menu.appendChild(realBtn);
+  document.body.appendChild(menu);
 });
 
 
-function sendFeedback(jobTitle, jobText) {
+  icon.addEventListener('mouseover', () => { icon.style.transform = 'scale(1.2)'; });
+  icon.addEventListener('mouseout', () => { icon.style.transform = 'scale(1)'; });
+
+  document.body.appendChild(icon);
+}
+
+
+
+
+
+function sendFeedback(jobTitle, jobText, feedbackType) {
   fetch('https://scram-production.up.railway.app/feedback', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       job_title: jobTitle,
       job_description: jobText,
-      feedback_type: 'report'
+      feedback_type: feedbackType // now either 'fake' or 'real'
     })
   })
   .then(response => {
@@ -361,7 +360,4 @@ function sendFeedback(jobTitle, jobText) {
 }
 
 
-function clearSummaryMessage() {
-  const msg = document.getElementById('scram-summary-msg');
-  if (msg) msg.remove();
-}
+

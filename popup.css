@@ -45,3 +45,16 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(22px);
 }
+
+.scram-wrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+}
+
+.scram-feedback-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  cursor: pointer;
+}

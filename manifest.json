@@ -12,13 +12,14 @@
         "tabs",
         "activeTab",
         "scripting",
-        "https://scram-j85q.onrender.com/"],
+        "https://scram-production.up.railway.app/"],
     "action": {
   "default_icon": {
     "16": "icons/icon_16x16.png",
     "48": "icons/icon_48x48.png",
     "128": "icons/icon_128x128.png"
   },
+
   "default_popup": "popup.html"
     },
     "host_permissions": ["https://www.indeed.com/",  "http://localhost:5001/*"],
@@ -32,16 +33,16 @@
         }
     ],
     "web_accessible_resources": [
-        {
-            "resources": [
-                "assets/bookmark.png",
-                "assets/play.png",
-                "assets/delete.png",
-                "assets/save.png"
-            ],
-            "matches": ["*://*.indeed.com/*"]
-        }
-   
+  {
+    "resources": [
+      "assets/feedback.png",
+      "assets/bookmark.png",
+      "assets/play.png",
+      "assets/delete.png",
+      "assets/save.png"
     ],
+    "matches": ["<all_urls>", "*://*.indeed.com/*"]
+  }
+],
     "manifest_version": 3
 }
